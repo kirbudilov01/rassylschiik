@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Outreach Platform</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --paper: #fffdf9;
+      --text: #1f2328;
+      --accent: #005f73;
+      --accent-2: #ee9b00;
+      --muted: #5b6470;
+      --line: #d6d2cc;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 10% 10%, #fef7e6, transparent 38%),
+        radial-gradient(circle at 90% 20%, #d6f0f6, transparent 40%),
+        var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 24px; }
+    .hero {
+      background: linear-gradient(130deg, #fefcf8 0%, #fff 50%, #f1fbfc 100%);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 14px 35px rgba(30, 32, 38, 0.08);
+    }
+    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.03em; }
+    p { margin: 0; color: var(--muted); }
+    .grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 920px) {
+      .grid { grid-template-columns: 1fr 1fr; }
+    }
+    .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px;
+    }
+    h2 { margin: 0 0 12px; font-size: 22px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+    input, textarea {
+      width: 100%;
+      border: 1px solid #c7c2bb;
+      border-radius: 10px;
+      padding: 10px;
+      font: inherit;
+      margin-bottom: 10px;
+      background: #fff;
+    }
+    button {
+      border: 0;
+      background: var(--accent);
+      color: white;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .project-list { display: grid; gap: 10px; }
+    .project-item {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+    }
+    .badge {
+      font-size: 12px;
+      color: #143f48;
+      background: #d6f0f6;
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    a.btn {
+      text-decoration: none;
+      font-size: 14px;
+      color: #003845;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>AI Outreach Platform</h1>
+      <p>Один проект = воронка лидов из Telegram-чатов, AI-оценка, ручное подтверждение и отправка с лимитами.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Создать проект</h2>
+        <form action="/projects/form" method="post">
+          <label>Название</label>
+          <input name="name" placeholder="YouTube Продюсирование RU" required />
+
+          <label>Оффер</label>
+          <textarea name="offer_text" rows="3" placeholder="Помогаем каналам расти через продюсирование, контент-план и аналитику" required></textarea>
+
+          <label>Ссылка назначения</label>
+          <input name="destination_link" placeholder="https://t.me/your_channel" required />
+
+          <label>Минимальный score (0..1)</label>
+          <input name="min_score" type="number" min="0" max="1" step="0.01" value="0.65" required />
+
+          <button type="submit">Создать</button>
+        </form>
+      </article>
+
+      <article class="card">
+        <h2>Проекты</h2>
+        <div class="project-list">
+          {% for p in projects %}
+          <div class="project-item">
+            <div>
+              <div><strong>{{ p.name }}</strong></div>
+              <div class="badge">threshold: {{ '%.2f' % p.min_score }}</div>
+            </div>
+            <a class="btn" href="/projects/{{ p.id }}">Открыть</a>
+          </div>
+          {% else %}
+          <p>Пока нет проектов.</p>
+          {% endfor %}
+        </div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

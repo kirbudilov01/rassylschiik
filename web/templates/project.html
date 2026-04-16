@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ project.name }}</title>
+  <style>
+    :root {
+      --bg: #f8f7f3;
+      --card: #ffffff;
+      --text: #1f2328;
+      --muted: #5f6670;
+      --line: #d8d2c7;
+      --ok: #2a9d8f;
+      --warn: #e76f51;
+      --accent: #264653;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 80% 0%, #fff1d4, transparent 35%),
+        radial-gradient(circle at 10% 20%, #dbeef5, transparent 40%),
+        var(--bg);
+    }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .top a { text-decoration: none; color: var(--accent); font-weight: 700; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    @media (min-width: 1000px) {
+      .grid { grid-template-columns: 340px 1fr; }
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+    h1 { margin: 0 0 6px; font-size: clamp(24px, 3vw, 34px); }
+    h2 { margin: 0 0 10px; font-size: 18px; }
+    p, small { color: var(--muted); }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    input, textarea {
+      width: 100%;
+      border: 1px solid #c7c2b9;
+      border-radius: 10px;
+      padding: 9px;
+      font: inherit;
+      margin-bottom: 9px;
+      background: white;
+    }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 600;
+      background: var(--accent);
+      color: white;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .table th, .table td {
+      border-bottom: 1px solid #ece8e1;
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+    }
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background: #e5eef0;
+      color: #1f4953;
+    }
+    .score-high { color: var(--ok); font-weight: 700; }
+    .score-low { color: var(--warn); font-weight: 700; }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-warn { background: var(--warn); }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .kpi {
+      border: 1px solid #ece6dd;
+      border-radius: 10px;
+      padding: 8px;
+      background: #fffdfa;
+    }
+    .kpi .label { font-size: 12px; color: var(--muted); }
+    .kpi .value { font-size: 22px; font-weight: 700; }
+    .link-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    .link-btn {
+      text-decoration: none;
+      border: 1px solid #d7d2c8;
+      border-radius: 10px;
+      padding: 7px 10px;
+      color: #1d3f48;
+      background: #f8fbfb;
+      font-weight: 600;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>{{ project.name }}</h1>
+        <p>Оффер: {{ project.offer_text }}</p>
+        <small>Ссылка: {{ project.destination_link }} | threshold: {{ '%.2f' % project.min_score }}</small>
+      </div>
+      <a href="/">← На главную</a>
+    </div>
+
+    <section class="grid">
+      <div>
+        <article class="card">
+          <h2>Добавить аккаунт</h2>
+          <form method="post" action="/projects/{{ project.id }}/accounts/form">
+            <label>Alias</label>
+            <input name="alias" placeholder="sales_ru_1" required />
+
+            <label>Phone masked</label>
+            <input name="phone_masked" placeholder="+7***123" />
+
+            <label>Max/hour</label>
+            <input type="number" name="max_per_hour" value="3" min="1" max="50" required />
+
+            <label>Max/day</label>
+            <input type="number" name="max_per_day" value="5" min="1" max="200" required />
+
+            <button type="submit">Сохранить аккаунт</button>
+          </form>
+
+          <hr />
+          <h2>Аккаунты</h2>
+          {% for a in accounts %}
+            <p><strong>{{ a.alias }}</strong> ({{ a.phone_masked }})<br/>лимиты: {{ a.max_per_hour }}/h, {{ a.max_per_day }}/day</p>
+          {% else %}
+            <p>Аккаунтов пока нет.</p>
+          {% endfor %}
+        </article>
+
+        <article class="card">
+          <h2>Ingest кандидата</h2>
+          <form method="post" action="/projects/{{ project.id }}/ingest/form">
+            <label>Source chat</label>
+            <input name="source_chat" placeholder="youtube_help_chat" required />
+
+            <label>Source user</label>
+            <input name="source_user" placeholder="@username" required />
+
+            <label>Source message</label>
+            <textarea name="source_message" rows="5" placeholder="Ищу специалиста по YouTube продвижению..." required></textarea>
+
+            <button type="submit">Добавить в pipeline</button>
+          </form>
+        </article>
+      </div>
+
+      <article class="card">
+        <h2>Сводка проекта</h2>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">Аккаунтов</div>
+            <div class="value">{{ metrics.accounts_count }}</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Лидов всего</div>
+            <div class="value">{{ metrics.total_leads }}</div>
+          </div>
+          <div class="kpi">
+            <div class="label">В очереди review</div>
+            <div class="value">{{ metrics.queued_review_count }}</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Выбрано (всего)</div>
+            <div class="value">{{ metrics.selected_total_count }}</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Отправлено сегодня</div>
+            <div class="value">{{ metrics.sent_today_count }}</div>
+          </div>
+        </div>
+
+        <div class="link-row">
+          <a class="link-btn" href="/projects/{{ project.id }}/exports/selected.csv">CSV: Выбранные</a>
+          <a class="link-btn" href="/projects/{{ project.id }}/exports/sent.csv">CSV: Отправленные</a>
+        </div>
+
+        <h2>Тест фразы по словарю</h2>
+        <form method="post" action="/projects/{{ project.id }}/analyze-message">
+          <label>Вставь сообщение для проверки</label>
+          <textarea name="source_message" rows="3" placeholder="Ищу продюсера по YouTube, канал не растет" required></textarea>
+          <button type="submit">Проверить совпадения</button>
+        </form>
+
+        <h2>Цифры по датам (14 дней)</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Выбрано</th>
+              <th>Отправлено</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in daily_status_stats %}
+            <tr>
+              <td>{{ row.day }}</td>
+              <td>{{ row.selected }}</td>
+              <td>{{ row.sent }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h2>Выбранные сообщения</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Кому</th>
+              <th>Исходное сообщение</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in selected_leads %}
+            <tr>
+              <td>{{ s.id }}</td>
+              <td>{{ s.source_chat }}<br/>{{ s.source_user }}</td>
+              <td>{{ s.source_message }}</td>
+              <td><span class="status">{{ s.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4">Пока нет выбранных сообщений.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h2>Отправленные сообщения</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Кому</th>
+              <th>Что отправили</th>
+              <th>Статус</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in sent_leads %}
+            <tr>
+              <td>{{ l.id }}</td>
+              <td>{{ l.source_chat }}<br/>{{ l.source_user }}</td>
+              <td>{{ l.drafted_message }}</td>
+              <td><span class="status">{{ l.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4">Пока нет отправленных сообщений.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <h2>Все лиды (оператор)</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Источник</th>
+              <th>Сообщение</th>
+              <th>Score</th>
+              <th>Статус</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in leads %}
+            <tr>
+              <td>{{ l.id }}</td>
+              <td>{{ l.source_chat }}<br/>{{ l.source_user }}</td>
+              <td>
+                <div>{{ l.source_message }}</div>
+                <small>Reason: {{ l.lead_reason }}</small>
+                <details>
+                  <summary>Draft</summary>
+                  <p>{{ l.drafted_message }}</p>
+                </details>
+              </td>
+              <td>
+                {% if l.lead_score >= project.min_score %}
+                  <span class="score-high">{{ '%.2f' % l.lead_score }}</span>
+                {% else %}
+                  <span class="score-low">{{ '%.2f' % l.lead_score }}</span>
+                {% endif %}
+              </td>
+              <td><span class="status">{{ l.status }}</span></td>
+              <td>
+                <div class="actions">
+                  <form method="post" action="/leads/{{ l.id }}/approve/form">
+                    <button type="submit">Approve/Queue</button>
+                  </form>
+                  <form method="post" action="/leads/{{ l.id }}/reject/form">
+                    <button type="submit" class="btn-warn">Reject</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6">Лидов пока нет.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
